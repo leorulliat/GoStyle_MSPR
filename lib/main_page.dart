@@ -42,8 +42,7 @@ class MainPageState extends State<MainPage> {
                 new Container(
                   child: Container(
                     height: 120.0,
-                    child:
-                    new Dialog()
+                    child: Text(barcode)
                   ),
                 ),
               ],
