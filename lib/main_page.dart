@@ -11,8 +11,9 @@ class MainPage extends StatefulWidget {
 }
 
 class MainPageState extends State<MainPage> {
+
+  // Déclaration variable globale
   String barcode = "";
-  String resultat = "";
 
   @override
   initState() {
@@ -38,12 +39,6 @@ class MainPageState extends State<MainPage> {
                       )
                   ),
                   padding: const EdgeInsets.all(8.0),
-                ),
-                new Container(
-                  child: Container(
-                    height: 120.0,
-                    child: Text(barcode)
-                  ),
                 ),
               ],
             ),
@@ -73,18 +68,37 @@ class MainPageState extends State<MainPage> {
 
     try {
       String resultat = await getData(barcode);
-      setState(() => this.resultat = resultat);
+      showPop(context, resultat);
     } catch(e) {
-      setState(() => this.resultat = 'Erreur inconnue: $e');
+      //TODO demander au prof ce que l'on peut mettre  dans le catch
+      //setState(() => this.resultat = 'Erreur inconnue: $e');
     }
   }
 
+  // Méthde intérogeant la base de donnée
   Future getData(param) async {
-    const url = "http://d999ad2e.ngrok.io/?qrcode=";
+    const url = "http://7d3e2eb7.ngrok.io/?qrcode=";
     var uri = url + param;
-    print("uri = "+uri);
     http.Response reponse = await http.get(Uri.encodeFull(uri));
-    print("reponse = "+reponse.body);
     return reponse.body;
+  }
+
+  // Focntion recevant le résultat de l'API et l'affichant en pop-up
+  showPop(BuildContext context, param) {
+    return showDialog(context: context, builder: (context) {
+      return AlertDialog(
+        title: Text("CODE PROMO"),
+        content: Text(param),
+        actions: <Widget>[
+          MaterialButton(
+            elevation: 5.0,
+            child: Text('Fermer'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          )
+        ],
+      );
+    });
   }
 }

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import 'main_page.dart';
 
 // QRCode Generator https://fr.qr-code-generator.com
