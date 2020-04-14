@@ -1,7 +1,10 @@
+import 'dart:convert';
+
 import 'package:barcode_scan/barcode_scan.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
+import 'ListePromo.dart';
 
 class MainPage extends StatefulWidget {
   @override
@@ -14,10 +17,13 @@ class MainPageState extends State<MainPage> {
 
   // Déclaration variable globale
   String barcode = "";
+  String url = "http://a8d84c24.ngrok.io/";
+  Future<ListePromos> futureListePromo;
 
   @override
   initState() {
     super.initState();
+    //futureListePromo = getPromos(true);
   }
 
   @override
@@ -30,6 +36,20 @@ class MainPageState extends State<MainPage> {
           body: new Center(
             child: new Column(
               children: <Widget>[
+                new Container(
+                  child: FutureBuilder<ListePromos>(
+                    future: getPromos(),
+                    builder: (context, AsyncSnapshot<ListePromos> snapshot) {
+                      if (snapshot.hasData) {
+                        return Text(snapshot.data.titre);
+                      } else if (snapshot.hasError) {
+                        return Text("${snapshot.error}");
+                      }
+                      // By default, show a loading spinner.
+                      return CircularProgressIndicator();
+                    }
+                  ),
+                ),
                 new Container(
                   child: new MaterialButton(
                       onPressed: scan,
@@ -48,8 +68,8 @@ class MainPageState extends State<MainPage> {
 
   Future scan() async {
     try {
+      //TODO ne pas envoyé si on appuie sur le bouton retour
       String barcode = await BarcodeScanner.scan();
-      print("barcode "+barcode);
       setState(() => this.barcode = barcode);
 
     } on PlatformException catch (e) {
@@ -77,13 +97,30 @@ class MainPageState extends State<MainPage> {
 
   // Méthde intérogeant la base de donnée
   Future getData(param) async {
-    const url = "http://7d3e2eb7.ngrok.io/?qrcode=";
-    var uri = url + param;
+    var uri = this.url + "?qrcode="+ param;
     http.Response reponse = await http.get(Uri.encodeFull(uri));
-    return reponse.body;
+    if(reponse.statusCode == 200) {
+      return reponse.body;
+    }
+    else if(reponse.statusCode == 502) {
+      return "Serveur inaccessible";
+    }
   }
 
-  // Focntion recevant le résultat de l'API et l'affichant en pop-up
+  Future<ListePromos> getPromos() async {
+    print("reponse getPromos "+this.url + "?liste=");
+    final reponse = await http.get(Uri.encodeFull(this.url + "?liste=true"));
+    print("reponse getPromos "+this.url + "?liste=");
+    //if(reponse.statusCode == 200) {
+      return ListePromos.fromJson(json.decode(reponse.body));
+    //}
+    /*else {
+      return "Un problème est survenu lors de la récupération des promotions en cours";
+      //throw Exception("Un problème est survenu lors de la récupération des promotions en cours");
+    }*/
+  }
+
+  // Fonction recevant le résultat de l'API et l'affichant en pop-up
   showPop(BuildContext context, param) {
     return showDialog(context: context, builder: (context) {
       return AlertDialog(
@@ -96,7 +133,7 @@ class MainPageState extends State<MainPage> {
             onPressed: () {
               Navigator.of(context).pop();
             },
-          )
+          ),
         ],
       );
     });
