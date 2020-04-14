@@ -17,8 +17,8 @@ class MainPageState extends State<MainPage> {
 
   // Déclaration variable globale
   String barcode = "";
-  String url = "http://a8d84c24.ngrok.io/";
-  Future<ListePromos> futureListePromo;
+  String url = "http://17312ac7.ngrok.io/";
+  Future<ListePromo> futureListePromo;
 
   @override
   initState() {
@@ -37,9 +37,9 @@ class MainPageState extends State<MainPage> {
             child: new Column(
               children: <Widget>[
                 new Container(
-                  child: FutureBuilder<ListePromos>(
+                  child: FutureBuilder<ListePromo>(
                     future: getPromos(),
-                    builder: (context, AsyncSnapshot<ListePromos> snapshot) {
+                    builder: (context, AsyncSnapshot<ListePromo> snapshot) {
                       if (snapshot.hasData) {
                         return Text(snapshot.data.titre);
                       } else if (snapshot.hasError) {
@@ -107,12 +107,13 @@ class MainPageState extends State<MainPage> {
     }
   }
 
-  Future<ListePromos> getPromos() async {
+  Future<ListePromo> getPromos() async {
     print("reponse getPromos "+this.url + "?liste=");
     final reponse = await http.get(Uri.encodeFull(this.url + "?liste=true"));
+    final jsonReponse = json.decode(reponse.body);
     print("reponse getPromos "+this.url + "?liste=");
     //if(reponse.statusCode == 200) {
-      return ListePromos.fromJson(json.decode(reponse.body));
+      return ListePromo.fromJson(jsonReponse[0]);
     //}
     /*else {
       return "Un problème est survenu lors de la récupération des promotions en cours";
